@@ -1,0 +1,24 @@
+#	ip	method	path	statuscode	algorithm	timestamp	is_suspicious	hour_bucket	year	month	day	hour
+1	::1	GET	/api/fixed	200	fixed-window	2026-07-09T09:55:09.860Z	false	2026-07-09T09	2026	07	09	09
+2	::1	GET	/api/fixed	200	fixed-window	2026-07-09T09:55:11.904Z	false	2026-07-09T09	2026	07	09	09
+3	::1	GET	/api/fixed	200	fixed-window	2026-07-09T09:55:13.394Z	false	2026-07-09T09	2026	07	09	09
+4	::1	GET	/api/fixed	200	fixed-window	2026-07-09T09:56:07.000Z	false	2026-07-09T09	2026	07	09	09
+5	::1	GET	/api/fixed	200	fixed-window	2026-07-09T09:56:26.798Z	false	2026-07-09T09	2026	07	09	09
+
+
+#query2
+#	ip	request_count
+1	::1	5
+
+#query3
+#	algorithm	total_requests	suspicious_count
+1	fixed-window	25	10
+
+
+#query4
+#	algorithm	total_requests	suspicious_count
+1	fixed-window	5	0
+
+#query5
+#	hour_bucket	request_count	rate_limited_count
+1	2026-07-09T09	5	0
