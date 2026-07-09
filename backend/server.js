@@ -2,7 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import { runAthenaQuery } from "./athenaClient.js";
-
+import { repairTablePartitions } from "./athenaClient.js";
 dotenv.config();
 
 const app = express();
@@ -10,6 +10,21 @@ app.use(cors());
 
 const TABLE = process.env.ATHENA_TABLE;
 
+
+// Run once at startup
+repairTablePartitions()
+  .then(() => console.log("Partitions repaired at startup"))
+  .catch((err) => console.warn("Partition repair failed:", err.message));
+
+// Then refresh every 60 seconds so new S3 data becomes queryable automatically
+setInterval(async () => {
+  try {
+    await repairTablePartitions();
+    console.log("Partitions repaired");
+  } catch (err) {
+    console.warn("Partition repair failed:", err.message);
+  }
+}, 60000);
 app.get("/health", (req, res) => res.json({ status: "ok" }));
 
 // Top offending IPs

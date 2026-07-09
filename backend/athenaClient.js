@@ -18,6 +18,10 @@ function sleep(ms) {
  * Runs an Athena SQL query and returns parsed rows as an array of objects.
  * Polls until the query finishes (Athena queries are async by nature).
  */
+export async function repairTablePartitions() {
+  const sql = `MSCK REPAIR TABLE ${process.env.ATHENA_TABLE};`;
+  await runAthenaQuery(sql);
+}
 export async function runAthenaQuery(sql) {
   const startCommand = new StartQueryExecutionCommand({
     QueryString: sql,

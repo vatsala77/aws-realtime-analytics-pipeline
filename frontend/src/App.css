@@ -1,0 +1,107 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: #0a0e1a;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+}
+
+.dashboard-container { min-height: 100vh; }
+
+.top-nav {
+  padding: 16px 32px;
+  border-bottom: 1px solid #1e293b;
+  display: flex;
+  align-items: center;
+}
+
+.nav-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.brand-icon { color: #60a5fa; }
+.brand-accent { color: #64748b; font-weight: 400; }
+
+.dashboard { padding: 32px; max-width: 1400px; margin: 0 auto; }
+
+.dashboard-header { margin-bottom: 24px; }
+.dashboard-header h1 { font-size: 28px; margin-bottom: 6px; }
+.dashboard-header p { color: #94a3b8; font-size: 14px; }
+
+.error-banner {
+  color: #f87171;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(248, 113, 113, 0.1);
+  border-radius: 6px;
+}
+
+.stat-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.stat-card {
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #94a3b8;
+  font-size: 13px;
+  margin-bottom: 10px;
+}
+
+.icon-warn { color: #f87171; }
+.icon-info { color: #60a5fa; }
+.icon-good { color: #34d399; }
+
+.stat-value { font-size: 28px; font-weight: 700; }
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.chart-panel {
+  background: #111827;
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 20px;
+}
+
+.chart-panel h2 { font-size: 15px; margin-bottom: 16px; color: #e2e8f0; }
+
+.full-width { grid-column: 1 / -1; }
+
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th {
+  text-align: left;
+  padding: 10px;
+  color: #94a3b8;
+  border-bottom: 1px solid #1e293b;
+}
+.data-table td { padding: 10px; border-bottom: 1px solid #1e293b; }
+.status-bad { color: #f87171; font-weight: 600; }
+.empty-row { text-align: center; color: #64748b; padding: 24px; }
+
+.loading-screen {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  color: #64748b;
+}
