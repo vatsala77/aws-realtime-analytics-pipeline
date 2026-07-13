@@ -61,22 +61,27 @@ app.get("/api/analytics/status-codes", async (req, res) => {
 });
 
 // Suspicious requests
+// Suspicious requests
 app.get("/api/analytics/suspicious", async (req, res) => {
   try {
     const data = await runAthenaQuery(`
-      SELECT ip, method, path, statuscode, timestamp
+      SELECT ip, method, path, statuscode, timestamp,
+             COUNT(*) OVER() as total_count
       FROM ${TABLE}
       WHERE is_suspicious = true
       ORDER BY timestamp DESC
       LIMIT 20;
     `);
-    res.json(data);
+
+    const total = data.length > 0 ? Number(data[0].total_count) : 0;
+    const rows = data.map(({ total_count, ...rest }) => rest);
+
+    res.json({ total, rows });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 });
-
 // Requests per algorithm
 app.get("/api/analytics/by-algorithm", async (req, res) => {
   try {

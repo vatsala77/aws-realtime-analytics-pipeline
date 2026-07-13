@@ -22,6 +22,7 @@ export async function repairTablePartitions() {
   const sql = `MSCK REPAIR TABLE ${process.env.ATHENA_TABLE};`;
   await runAthenaQuery(sql);
 }
+
 export async function runAthenaQuery(sql) {
   const startCommand = new StartQueryExecutionCommand({
     QueryString: sql,
@@ -30,6 +31,11 @@ export async function runAthenaQuery(sql) {
     },
     ResultConfiguration: {
       OutputLocation: process.env.ATHENA_OUTPUT_LOCATION,
+    },
+    ResultReuseConfiguration: {
+      ResultReuseByAgeConfiguration: {
+        Enabled: false,
+      },
     },
   });
 
@@ -55,6 +61,11 @@ export async function runAthenaQuery(sql) {
   const resultsResponse = await client.send(resultsCommand);
 
   const rows = resultsResponse.ResultSet.Rows;
+
+  if (!rows || rows.length === 0) {
+    return [];
+  }
+
   const headers = rows[0].Data.map((col) => col.VarCharValue);
 
   const dataRows = rows.slice(1).map((row) => {

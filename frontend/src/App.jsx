@@ -12,6 +12,7 @@ function App() {
   const [topIps, setTopIps] = useState([]);
   const [statusCodes, setStatusCodes] = useState([]);
   const [suspicious, setSuspicious] = useState([]);
+  const [suspiciousTotal, setSuspiciousTotal] = useState(0);
   const [byAlgorithm, setByAlgorithm] = useState([]);
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -19,7 +20,7 @@ function App() {
 
   const fetchAll = async () => {
     try {
-      const [ips, codes, susp, algo, trendData] = await Promise.all([
+      const [ips, codes, suspResp, algo, trendData] = await Promise.all([
         fetch(`${API_BASE}/api/analytics/top-ips`).then((r) => r.json()),
         fetch(`${API_BASE}/api/analytics/status-codes`).then((r) => r.json()),
         fetch(`${API_BASE}/api/analytics/suspicious`).then((r) => r.json()),
@@ -28,7 +29,8 @@ function App() {
       ]);
       setTopIps(ips);
       setStatusCodes(codes.map((c) => ({ ...c, count: Number(c.count) })));
-      setSuspicious(susp);
+      setSuspicious(suspResp.rows);
+      setSuspiciousTotal(suspResp.total);
       setByAlgorithm(algo);
       setTrend(trendData);
       setError(null);
@@ -71,7 +73,7 @@ function App() {
               <span>Total Suspicious Events</span>
               <AlertTriangle size={18} className="icon-warn" />
             </div>
-            <span className="stat-value">{suspicious.length}</span>
+            <span className="stat-value">{suspiciousTotal}</span>
           </div>
           <div className="stat-card">
             <div className="card-header">
