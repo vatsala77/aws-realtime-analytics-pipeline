@@ -50,32 +50,38 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
-  const simulateTraffic = async () => {
-    setSimulating(true);
-    setSimulateMsg("Sending burst traffic to Rate Limiter...");
+ const simulateTraffic = async () => {
+  setSimulating(true);
+  setSimulateMsg("Sending burst traffic to Rate Limiter...");
 
-    const endpoints = ["/api/fixed", "/api/sliding", "/api/token-bucket", "/api/leaky-bucket"];
+  const endpoints = ["/api/fixed", "/api/sliding", "/api/token-bucket", "/api/leaky-bucket"];
+  const REQUESTS_PER_ENDPOINT = 30;
 
-    try {
-      const requests = [];
-      for (let i = 0; i < 20; i++) {
-        const endpoint = endpoints[i % endpoints.length];
-        requests.push(
-          fetch(`${RATE_LIMITER_BASE}${endpoint}`, { mode: "no-cors" }).catch(() => {})
-        );
+  try {
+    for (const endpoint of endpoints) {
+      setSimulateMsg(`Sending traffic to ${endpoint}...`);
+      for (let i = 0; i < REQUESTS_PER_ENDPOINT; i++) {
+        try {
+          await fetch(`${RATE_LIMITER_BASE}${endpoint}?_=${Date.now()}_${i}`, {
+            mode: "no-cors",
+            cache: "no-store",
+          });
+        } catch (e) {
+          // ignore individual failures, keep going
+        }
       }
-      await Promise.all(requests);
-
-      setSimulateMsg(
-        "Traffic sent! Pipeline is processing (Kinesis buffer + Lambda + partition refresh) — dashboard will reflect new data in ~2 minutes. It'll auto-refresh, no need to reload."
-      );
-    } catch (err) {
-      setSimulateMsg("Traffic sent, but couldn't confirm delivery. Check back in a couple minutes anyway.");
-    } finally {
-      setSimulating(false);
-      setTimeout(() => setSimulateMsg(""), 15000);
     }
-  };
+
+    setSimulateMsg(
+      "Traffic sent (120 sequential requests across all 4 algorithms)! Pipeline is processing (Kinesis buffer + Lambda + partition refresh) — dashboard will reflect new data in ~2 minutes. It'll auto-refresh, no need to reload."
+    );
+  } catch (err) {
+    setSimulateMsg("Traffic sent, but couldn't confirm delivery. Check back in a couple minutes anyway.");
+  } finally {
+    setSimulating(false);
+    setTimeout(() => setSimulateMsg(""), 20000);
+  }
+};
 
   const COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa"];
 
