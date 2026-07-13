@@ -3,10 +3,11 @@ import {
   LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid,
   Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell
 } from "recharts";
-import { Activity, AlertTriangle, Shield, TrendingUp } from "lucide-react";
+import { Activity, AlertTriangle, Shield, TrendingUp, Zap } from "lucide-react";
 import "./App.css";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:4000";
+const RATE_LIMITER_BASE = "https://rate-limiter-l8yi.onrender.com";
 
 function App() {
   const [topIps, setTopIps] = useState([]);
@@ -17,6 +18,8 @@ function App() {
   const [trend, setTrend] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [simulating, setSimulating] = useState(false);
+  const [simulateMsg, setSimulateMsg] = useState("");
 
   const fetchAll = async () => {
     try {
@@ -47,6 +50,33 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  const simulateTraffic = async () => {
+    setSimulating(true);
+    setSimulateMsg("Sending burst traffic to Rate Limiter...");
+
+    const endpoints = ["/api/fixed", "/api/sliding", "/api/token-bucket", "/api/leaky-bucket"];
+
+    try {
+      const requests = [];
+      for (let i = 0; i < 20; i++) {
+        const endpoint = endpoints[i % endpoints.length];
+        requests.push(
+          fetch(`${RATE_LIMITER_BASE}${endpoint}`, { mode: "no-cors" }).catch(() => {})
+        );
+      }
+      await Promise.all(requests);
+
+      setSimulateMsg(
+        "Traffic sent! Pipeline is processing (Kinesis buffer + Lambda + partition refresh) — dashboard will reflect new data in ~2 minutes. It'll auto-refresh, no need to reload."
+      );
+    } catch (err) {
+      setSimulateMsg("Traffic sent, but couldn't confirm delivery. Check back in a couple minutes anyway.");
+    } finally {
+      setSimulating(false);
+      setTimeout(() => setSimulateMsg(""), 15000);
+    }
+  };
+
   const COLORS = ["#60a5fa", "#34d399", "#fbbf24", "#f87171", "#a78bfa"];
 
   if (loading) return <div className="loading-screen">Loading analytics...</div>;
@@ -63,8 +93,25 @@ function App() {
       <div className="dashboard">
         <header className="dashboard-header">
           <h1>Real-Time Traffic Analytics</h1>
-          <p>Live insights from Rate Limiter logs via Kinesis → S3 → Athena</p>
+          <p>
+            Live pipeline: Kinesis Firehose → S3 → Lambda → Glue → Athena → Dashboard.
+            The data below reflects actual captured traffic from load-testing sessions —
+            it's not mock data. Use the button below to send new traffic and watch the
+            pipeline update in real time (auto-refreshes every 15s).
+          </p>
           {error && <p className="error-banner">{error}</p>}
+
+          <div className="simulate-section">
+            <button
+              onClick={simulateTraffic}
+              disabled={simulating}
+              className="simulate-btn"
+            >
+              <Zap size={16} />
+              {simulating ? "Sending traffic..." : "Simulate Traffic Burst"}
+            </button>
+            {simulateMsg && <p className="simulate-msg">{simulateMsg}</p>}
+          </div>
         </header>
 
         <div className="stat-cards">
