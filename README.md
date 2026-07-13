@@ -8,9 +8,9 @@ Built as a hands-on portfolio project alongside preparing for the **AWS Certifie
 
 ## 🔗 Live Demo
 
-- **Dashboard:** [https://aws-realtime-analytics-pipeline.vercel.app/](#)
-- **Backend API:** [https://aws-realtime-analytics-pipeline.onrender.com](#)
-- **Demo Video:** [YouTube/Loom link here](#)
+- **Dashboard:** https://aws-realtime-analytics-pipeline.vercel.app/
+- **Backend API:** https://aws-realtime-analytics-pipeline.onrender.com
+- **Demo Video:** https://youtu.be/UBwwR-ih3UM
 - **Companion repo (data source):** [Rate Limiter](https://github.com/vatsala77/rate-limiterr)
 
 > **Note:** The dashboard shows real captured traffic from load-testing sessions, not mock data. Click **"Simulate Traffic Burst"** on the dashboard to send fresh requests through the live pipeline and watch it update in real time (~2 min end-to-end latency due to Kinesis buffering + partition refresh).
@@ -93,7 +93,7 @@ Built as a hands-on portfolio project alongside preparing for the **AWS Certifie
 
 ## 🎯 Why This Exists
 
-Most portfolio data pipelines use synthetic/mock data generators, which reads as a tutorial exercise rather than a real system. This pipeline instead observes **genuine traffic** from a production-style system I built and deployed — [a Redis-backed distributed rate limiter](https://github.com/YOUR-USERNAME/rate-limiter) supporting four different rate-limiting algorithms.
+Most portfolio data pipelines use synthetic/mock data generators, which reads as a tutorial exercise rather than a real system. This pipeline instead observes **genuine traffic** from a production-style system I built and deployed — [a Redis-backed distributed rate limiter](https://github.com/vatsala77/rate-limiterr) supporting four different rate-limiting algorithms.
 
 When the rate limiter blocks a client with a `429 Too Many Requests`, that signal flows through this pipeline in real time, gets flagged by rule-based anomaly detection in Lambda, and triggers an automated alert — the same pattern used in production observability systems, built at a scale appropriate for a portfolio project.
 
@@ -123,15 +123,7 @@ The Rate Limiter (traffic source) and this analytics pipeline (observability lay
 
 ---
 
-## 🐛 Notable Debugging / Learnings
 
-A few real production-style issues surfaced and fixed during development — documented here because the debugging process is as much a signal of engineering ability as the working system:
-
-1. **IAM permission chains fail silently at multiple layers.** Getting anomaly alerts working end-to-end required fixing three separate IAM issues in sequence: a malformed `SNS_TOPIC_ARN` environment variable, a missing `sns:Publish` permission on the Lambda execution role, and — most subtly — a missing `glue:BatchCreatePartition`/`glue:CreatePartition` permission on the application's IAM user. The last one caused automated partition repair to return success with zero errors while silently failing to register new partitions, because the AWS Console user (with broader permissions) could run the same query manually and get correct results — masking the gap for a while.
-2. **Athena DDL commands need different result handling than SELECT queries.** `MSCK REPAIR TABLE` returns no result rows, which crashed a query-result parser written assuming `SELECT`-shaped responses.
-3. **Athena returns all values as strings** (`VarCharValue`), which silently broke a Recharts Pie chart expecting numeric types — Bar/Line charts coerced types implicitly and masked the bug; Pie chart's percentage math did not.
-4. **SNS email alerts can be auto-unsubscribed by email security scanners** (Gmail's link-prefetching for phishing protection can trigger the one-click unsubscribe link embedded in SNS emails within minutes of confirming) — worked around by using SMS as a secondary channel and by testing immediately after each fresh subscription.
-5. **New S3 partitions aren't visible to Athena until the catalog is refreshed** — a core lesson in how Glue Data Catalog and Athena decouple storage from schema, directly relevant to the AWS Data Engineer certification material.
 
 ---
 
@@ -150,32 +142,6 @@ Built with a **$60 AWS free-tier/promotional credit budget**, mindful of a **30 
 
 ---
 
-## 📸 Screenshots
-
-*(Screenshots organized by pipeline stage — add as you go)*
-
-### Ingestion
-- [ ] IAM role config (Firehose → S3)
-- [ ] Firehose delivery stream config
-- [ ] S3 raw data landing with partition structure
-
-### Transform & Catalog
-- [ ] Lambda function code + trigger config
-- [ ] CloudWatch logs showing successful execution
-- [ ] Glue Data Catalog table schema
-
-### Query Layer
-- [ ] Athena query results (all 5 core queries)
-
-### Anomaly Detection
-- [ ] CloudWatch log showing suspicious count + SNS publish success
-- [ ] Email/SMS alert received
-
-### Dashboard
-- [ ] Live dashboard with all 5 charts populated
-- [ ] "Simulate Traffic Burst" interaction
-
----
 
 ## 🚀 Local Setup
 
